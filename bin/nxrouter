@@ -10,12 +10,16 @@ var argv = require('optimist')
     .describe('port', 'Nginx port number.')
     .describe('path', 'Path to extract files.')
     .describe('nginx', 'Path to Nginx config.')
-    .describe('portRange', 'Port range to use.')
-    .describe('respawn', 'Respawn limit and interval.')
+    .describe('portRange.min', 'Minimum port range to use.')
+    .describe('portRange.max', 'Maximum port range to use.')
+    .describe('respawn.limit', 'Max respawn for given interval.')
+    .describe('respawn.interval', 'Number of seconds to wait before respawn.')
+    .describe('respawn.limitInterval', 'Number of seconds to wait before respawn if limit is met.')
     .describe('name', 'Name of service.')
     .describe('adminPort', 'Admin port to listen on.')
     .demand(['name'])
-    .default({ nginx: '/etc/nginx/', port: 80, ip: '127.0.0.1', path: './versions/', adminPort: 11400, portRange: [8000,9000], respawn: [50,5] })
+    .default({ nginx: '/etc/nginx/', port: 80, ip: '127.0.0.1', path: './versions/', adminPort: 11400, 
+    	portRange: {min: 8000, max: 9000}, respawn: {limit: 50, interval: 5, limitInterval: 60} })
     .argv;
 
 var nginxPath = path.resolve(argv.nginx);
@@ -41,13 +45,7 @@ process.on('SIGUSR2',function(){
 
 process.on('SIGINT',function(){
     console.log("Received SIGINT from system");
-    currentContext.stopping = true;
-    if (currentContext && currentContext.processes){
-	    for(proc in currentContext.processes){
-	    	currentContext.processes[proc].kill('SIGINT');
-	    }
-	}
-	currentContext.httpServer.close();
+    router.stop();
 });
 
 process.on('message', function(m) {
