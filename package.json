@@ -1,0 +1,16 @@
+{
+  "name": "nginx-router",
+  "version": "0.0.0",
+  "description": "Nginx router for multiple versions of a Node application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "optimist": "~0.6.1",
+    "mustache": "~0.8.1",
+    "async": "~0.9.0"
+  }
+}

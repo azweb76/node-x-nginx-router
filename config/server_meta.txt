@@ -1,0 +1,6 @@
+server {
+	listen ${ip}:${port};
+
+	include conf.d/${name}/v-*.conf;
+	include conf.d/${name}/default*.conf;
+}

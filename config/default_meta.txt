@@ -1,0 +1,3 @@
+location / {
+	rewrite ^/(.*)$ /${currentVersion}/$1 last;
+}

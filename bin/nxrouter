@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+var path   = require('path');
+var router = require('../lib/router');
+var fs     = require('fs');
+
+var argv = require('optimist')
+    .usage('Usage: $0 --name <name> [--ip <api>] [--port <port>] [--path <path>] [--nginx <nginx path>]')
+    .describe('ip', 'Nginx IP.')
+    .describe('port', 'Nginx port number.')
+    .describe('path', 'Path to extract files.')
+    .describe('nginx', 'Path to Nginx config.')
+    .describe('portRange', 'Port range to use.')
+    .describe('respawn', 'Respawn limit and interval.')
+    .describe('name', 'Name of service.')
+    .describe('adminPort', 'Admin port to listen on.')
+    .demand(['name'])
+    .default({ nginx: '/etc/nginx/', port: 80, ip: '127.0.0.1', path: './versions/', adminPort: 11400, portRange: [8000,9000], respawn: [50,5] })
+    .argv;
+
+var nginxPath = path.resolve(argv.nginx);
+var op = {
+	path: path.resolve(argv.path),
+	nginxPath: nginxPath,
+	ip: argv.ip,
+	port: argv.port,
+	name: argv.name,
+	portRange: argv.portRange,
+	adminPort: argv.adminPort,
+	respawn: argv.respawn,
+	nginxConfdPath: path.join(nginxPath, 'conf.d'),
+	nginxAppPath: path.join(nginxPath, 'conf.d', argv.name)
+};
+
+var currentContext = null;
+
+process.on('SIGUSR2',function(){
+    console.log("Received SIGUSR2 from system");
+    router.reload(currentContext);
+});
+
+process.on('SIGINT',function(){
+    console.log("Received SIGINT from system");
+    currentContext.stopping = true;
+    if (currentContext && currentContext.processes){
+	    for(proc in currentContext.processes){
+	    	currentContext.processes[proc].kill('SIGINT');
+	    }
+	}
+	currentContext.httpServer.close();
+});
+
+process.on('message', function(m) {
+  console.log(m);
+});
+
+router.start(op, function(err, ctx){
+	currentContext = ctx;
+	fs.writeFileSync(path.join(__dirname, 'nxrouter.pid'), process.pid);
+});
