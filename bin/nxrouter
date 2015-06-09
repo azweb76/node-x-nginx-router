@@ -4,12 +4,12 @@ var path   = require('path');
 var router = require('../lib/router');
 var fs     = require('fs');
 
-var argv = require('optimist')
+var argv = require('yargs')
     .usage('Usage: $0 --name <name> [--ip <api>] [--port <port>] [--path <path>] [--nginx <nginx path>]')
     .describe('ip', 'Nginx IP.')
     .describe('port', 'Nginx port number.')
     .describe('path', 'Path to extract files.')
-    .describe('nginx', 'Path to Nginx config.')
+    .describe('nginxPath', 'Path to Nginx config.')
     .describe('portRange.min', 'Minimum port range to use.')
     .describe('portRange.max', 'Maximum port range to use.')
     .describe('respawn.limit', 'Max respawn for given interval.')
@@ -17,25 +17,22 @@ var argv = require('optimist')
     .describe('respawn.limitInterval', 'Number of seconds to wait before respawn if limit is met.')
     .describe('name', 'Name of service.')
     .describe('adminPort', 'Admin port to listen on.')
-    .demand(['name'])
-    .default({ nginx: '/etc/nginx/', port: 80, ip: '127.0.0.1', path: './versions/', adminPort: 11400, 
+    .describe('config', 'Path to config file.')
+    .help('h')
+    .alias('h', 'help')
+    .default({ nginx: '/etc/nginx/', port: 80, ip: '127.0.0.1', path: './versions/', adminPort: 11400,
     	portRange: {min: 8000, max: 9000}, respawn: {limit: 50, interval: 5, limitInterval: 60} })
     .argv;
 
-var nginxPath = path.resolve(argv.nginx);
-var op = {
-	path: path.resolve(argv.path),
-	nginxPath: nginxPath,
-	ip: argv.ip,
-	port: argv.port,
-	name: argv.name,
-	portRange: argv.portRange,
-	adminPort: argv.adminPort,
-	respawn: argv.respawn,
-	nginxConfdPath: path.join(nginxPath, 'conf.d'),
-	nginxAppPath: path.join(nginxPath, 'conf.d', argv.name)
-};
+var config = argv;
+if(argv.config){
+  var p = path.resolve(argv.config);
+  config = require(p );
+}
 
+config.path = path.resolve(config.path);
+config.nginxPath = path.resolve(config.nginxPath);
+console.log(config);
 var currentContext = null;
 
 process.on('SIGUSR2',function(){
@@ -52,7 +49,7 @@ process.on('message', function(m) {
   console.log(m);
 });
 
-router.start(op, function(err, ctx){
+router.start(config, function(err, ctx){
 	currentContext = ctx;
 	fs.writeFileSync(path.join(__dirname, 'nxrouter.pid'), process.pid);
 });

@@ -1,0 +1,9 @@
+{
+  "name": "testapp",
+  "adminPort": 11500,
+  "path": "./sample/versions",
+  "nginxPath": "./sample/nginx/testapp.conf",
+  "portRange": { "min": 9000, "max": 9999 },
+  "respawn": { "limit": 5, "interval": 5000, "intervalLimit": 5 },
+  "reloadNginx": false
+}

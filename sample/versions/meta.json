@@ -1,0 +1,16 @@
+{
+ "instances": {
+  "v1": {
+   "port": 9000,
+   "name": "v1",
+   "path": "C:\\git\\node-x-nginx-router\\sample\\versions\\v1",
+   "nginxConf": "C:\\git\\node-x-nginx-router\\sample\\nginx\\v-v1.conf"
+  },
+  "v2": {
+   "port": 9001,
+   "name": "v2",
+   "path": "C:\\git\\node-x-nginx-router\\sample\\versions\\v2",
+   "nginxConf": "C:\\git\\node-x-nginx-router\\sample\\nginx\\v-v2.conf"
+  }
+ }
+}
